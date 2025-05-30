@@ -11,13 +11,21 @@ import {  registerController,
     sendOtp,
     verifyOTP,
     verifyToken,
-    uploadCoverPicture } from '../controllers/user.controller.js';
+    uploadCoverPicture ,
+    GLoginController,
+    GCallbackController,
+    GLogoutController} from '../controllers/user.controller.js';
 import {authMiddleware} from '../middlewares/auth.middleware.js'
 const router = Router();
 
 router.route('/register').post(registerController);
 router.route('/login').post(loginController);
 router.route('/refreshToken').patch(refreshAccessToken);
+
+// Routes for Google-authentication
+router.route('/auth/google').get(GLoginController);
+router.route('/auth/google/callback').get(GCallbackController)
+router.route('GLogout').post(authMiddleware,GLogoutController);
 
 // Secured Routed (permission level user)
 router.route('/logout').post(authMiddleware,logoutController)

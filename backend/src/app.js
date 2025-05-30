@@ -1,8 +1,10 @@
 import express from 'express';
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
-
+import session from './config/Gsession.js';
+import passport from './config/Gpassport.js';
 const app = express();
+
 
 // CORS configuration
 app.use(cors(
@@ -30,6 +32,10 @@ app.use(express.static("public"))
 // Setting up cookie parser
 app.use(cookieParser());
 
+//seting up for Google OAuth
+app.use(session)
+app.use(passport.initialize());
+app.use(passport.session());
 
 
 // importing Routes

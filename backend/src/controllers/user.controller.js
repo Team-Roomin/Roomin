@@ -6,8 +6,10 @@ import { ApiResponse } from '../utils/ApiResponse.js'
 import {uploadOnCloudinary} from '../utils/cloudinary.js'
 import {sendEmail} from '../utils/mail.js'
 import {generateEmailTemplate} from '../utils/mailTemplate.js'
+import passport from '../config/Gpassport.js';
 import jwt from 'jsonwebtoken'
-
+//import passport from 'passport';
+ 
 
 
 const registerController = asyncHandler(async (req, res) => {
@@ -38,7 +40,7 @@ const registerController = asyncHandler(async (req, res) => {
                                 phoneNo,
                                 password
                         });
-
+ 
                         console.log(newUser._id);
                         // const newUserId = newUser._id;
                         const user = await User.findById(newUser._id).select("-password -refreshToken");
@@ -116,6 +118,65 @@ const loginController = asyncHandler(async (req, res) => {
                 res.json({ error })
         }
 })
+
+
+
+
+
+ const GLoginController = asyncHandler(async (req, res) => {
+          passport.authenticate('google', {
+          accessType: 'offline',
+          scope: ['profile', 'email']
+  })
+ })
+
+
+
+
+ const GCallbackController = asyncHandler(async (req, res) => {
+          passport.authenticate('google', (err, user, info) => {
+           if (err || !user) {
+              // Send a JSON response for the frontend to handle
+           return res.status(401).json({ success: false, message: 'Google authentication failed' });
+          }
+         
+           // ...existing code for successful login...
+              req.logIn(user, (err) => {
+           if (err) {
+           return res.status(500).json({ success: false, message: 'Login failed' });
+        }
+          // Set cookies for access and refresh tokens
+           const refreshToken = user.refreshToken;
+           const accessToken = user.accessToken;
+           res.cookie('refreshToken', refreshToken, {
+                        httpOnly: true,
+                        secure: false,
+                        sameSite: 'Strict',
+                        path: '/refresh'
+                });
+          res.cookie('accessToken', accessToken, {
+                  httpOnly: false,
+                  secure: false,
+                  sameSite: 'Strict',
+                  path: '/'
+               });
+          res.json({ success: true, message: 'Logged in successfully' });
+             });
+      })
+      })
+
+
+
+const GLogoutController = asyncHandler(async (req, res) => {
+         req.logout(() => {
+    
+                res.clearCookie('accessToken');
+                res.clearCookie('refreshToken');
+    res.json({ success: true, message: 'Logged out successfully' });
+  });
+})
+
+
 
 
 const logoutController = asyncHandler(async (req, res) => {
@@ -420,7 +481,11 @@ export {
         refreshAccessToken,
         sendOtp,
         verifyOTP,
-        verifyToken
+        verifyToken,
+        GLoginController,
+        GCallbackController,
+        GLogoutController
+
 }
 
 
