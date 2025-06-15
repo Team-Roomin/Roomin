@@ -93,3 +93,62 @@ userSchema.methods.isValidToken = isValidToken;
 
 const User = mongoose.model('User',userSchema);
 export default User
+
+
+
+const usersSchema = {
+    _id: ObjectId, // MongoDB auto-generated
+    email: String, // unique identifier
+    username: String, // unique, for @mentions vibes
+    password: String, // hashed with bcrypt ofc 🔐
+    fullName: String,
+    phoneNumber: String,
+    avatar: String, // profile pic URL
+    role: String, // enum: "normal_user", "property_owner", "admin"
+    
+    // Profile info
+    bio: String,
+    location: {
+        city: String,
+        state: String,
+        country: String,
+        coordinates: {
+            type: "Point",
+            coordinates: [Number, Number] // [longitude, latitude]
+        }
+    },
+    
+    // User stats & activity
+    memberSince: Date,
+    lastActive: Date,
+    isVerified: Boolean, // for trust factor ✅
+    verificationDocuments: [{
+        type: String, // "aadhar", "pan", "driving_license"
+        documentUrl: String,
+        isVerified: Boolean
+    }],
+    
+    // Preferences for better UX
+    preferences: {
+        budget: {
+            min: Number,
+            max: Number
+        },
+        preferredLocations: [String],
+        notifications: {
+            email: Boolean,
+            sms: Boolean,
+            push: Boolean
+        }
+    },
+    
+    // Timestamps
+    createdAt: Date,
+    updatedAt: Date
+};
+
+// Index suggestions for Users
+db.users.createIndex({ email: 1 }, { unique: true });
+db.users.createIndex({ username: 1 }, { unique: true });
+db.users.createIndex({ role: 1 });
+db.users.createIndex({ "location.coordinates": "2dsphere" }); // for geo queries
